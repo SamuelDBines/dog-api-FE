@@ -1,26 +1,48 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect, useState } from 'react'
+import axios from 'axios'
+import BreedContext from './context/Breeds'
+import ApiResponse from './models/ApiResponse'
+import ImageFilterBar from './components/ImageFilterBar'
+import ImagesView from './components/ImagesView'
 
 function App() {
+  const [breeds, setBreeds] = useState<string[] | null>(null)
+  const [images, setImages] = useState<string[] | null>(null)
+
+  const findBreeds = () => {
+    if (!breeds) {
+      return axios
+        .get('https://dog.ceo/api/breeds/list/all')
+        .then((response: ApiResponse) => {
+          const { message: breedObject } = response.data
+          const breedData = Object.keys(breedObject)
+          setBreeds(breedData)
+        })
+        .catch((error) => {
+          console.log(error)
+        })
+    }
+  }
+
+  useEffect(() => {
+    findBreeds()
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="flex flex-col p-20">
+      <BreedContext.Provider
+        value={{
+          setBreeds,
+          breeds,
+          setImages,
+          images,
+        }}
+      >
+        <ImageFilterBar />
+        <ImagesView />
+      </BreedContext.Provider>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
